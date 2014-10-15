@@ -119,32 +119,67 @@ var move = function(gameData, helpers) {
 */
 
 
-// The "Safe Diamond Miner"
-// This hero will attempt to capture enemy diamond mines.
+// The "Late Assassin"
+// This hero will attempt to kill the closest weaker enemy hero later in the game.
 var move = function(gameData, helpers) {
   var myHero = gameData.activeHero;
 
-  //Get stats on the nearest health well
-  var healthWellStats = helpers.findNearestObjectDirectionAndDistance(gameData.board, myHero, function(boardTile) {
-    if (boardTile.type === 'HealthWell') {
-      return true;
-    }
-  });
-  var distanceToHealthWell = healthWellStats.distance;
-  var directionToHealthWell = healthWellStats.direction;
+  if (gameData.turn < 50) {
+	  var healthWellStats = helpers.findNearestObjectDirectionAndDistance(gameData.board, myHero, function(boardTile) {
+	    if (boardTile.type === 'HealthWell') {
+	      return true;
+	    }
+	  });
 
+	  var distanceToHealthWell = healthWellStats.distance;
+	  var directionToHealthWell = healthWellStats.direction;
 
-  if (myHero.health < 40) {
-    //Heal no matter what if low health
-    return directionToHealthWell;
-  } else if (myHero.health < 100 && distanceToHealthWell === 1) {
-    //Heal if you aren't full health and are close to a health well already
-    return directionToHealthWell;
+	  if (myHero.health < 40) {
+	    //Heal no matter what if low health
+	    return directionToHealthWell;
+	  } else if (myHero.health < 100 && distanceToHealthWell === 1) {
+	    //Heal if you aren't full health and are close to a health well already
+	    return directionToHealthWell;
+	  } else {
+	    //If healthy, go capture a diamond mine!
+	    return helpers.findNearestUnownedDiamondMine(gameData);
+	  }
+
   } else {
-    //If healthy, go capture a diamond mine!
-    return helpers.findNearestNonTeamDiamondMine(gameData);
+	  if (myHero.health < 50) {
+	    return helpers.findNearestHealthWell(gameData);
+	  } else {
+	    return helpers.findNearestWeakerEnemy(gameData);
+	  }
   }
 };
+
+// The "Safe Diamond Miner"
+// This hero will attempt to capture enemy diamond mines.
+// var move = function(gameData, helpers) {
+//   var myHero = gameData.activeHero;
+// 
+//   //Get stats on the nearest health well
+//   var healthWellStats = helpers.findNearestObjectDirectionAndDistance(gameData.board, myHero, function(boardTile) {
+//     if (boardTile.type === 'HealthWell') {
+//       return true;
+//     }
+//   });
+//   var distanceToHealthWell = healthWellStats.distance;
+//   var directionToHealthWell = healthWellStats.direction;
+// 
+// 
+//   if (myHero.health < 40) {
+//     //Heal no matter what if low health
+//     return directionToHealthWell;
+//   } else if (myHero.health < 100 && distanceToHealthWell === 1) {
+//     //Heal if you aren't full health and are close to a health well already
+//     return directionToHealthWell;
+//   } else {
+//     //If healthy, go capture a diamond mine!
+//     return helpers.findNearestNonTeamDiamondMine(gameData);
+//   }
+// };
 
 
 /*
