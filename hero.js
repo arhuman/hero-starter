@@ -124,30 +124,48 @@ var move = function(gameData, helpers) {
 var move = function(gameData, helpers) {
   var myHero = gameData.activeHero;
 
-  if (gameData.turn < 50) {
-	  var healthWellStats = helpers.findNearestObjectDirectionAndDistance(gameData.board, myHero, function(boardTile) {
-	    if (boardTile.type === 'HealthWell') {
-	      return true;
-	    }
-	  });
+  if (myHero.health == 100) {
+    return helpers.findNearestWeakerEnemy(gameData);
+  }
 
-	  var distanceToHealthWell = healthWellStats.distance;
-	  var directionToHealthWell = healthWellStats.direction;
+  //Get stats on the nearest health well
+  var healthWellStats = helpers.findNearestObjectDirectionAndDistance(gameData.board, myHero, function(boardTile) {
+    if (boardTile.type === 'HealthWell') {
+      return true;
+    }
+  });
 
-	  if (myHero.health < 40) {
-	    //Heal no matter what if low health
-	    return directionToHealthWell;
-	  } else if (myHero.health < 100 && distanceToHealthWell === 1) {
-	    //Heal if you aren't full health and are close to a health well already
-	    return directionToHealthWell;
+  var distanceToHealthWell = healthWellStats.distance;
+  var directionToHealthWell = healthWellStats.direction;
+
+  //Get stats on the nearest health well
+  var healthWellStats = helpers.findNearestObjectDirectionAndDistance(gameData.board, myHero, function(boardTile) {
+    if (boardTile.type === 'TeamMember') {
+      return true;
+    }
+  });
+
+  var distanceToTeamMember = healthWellStats.distance;
+  var directionToTeamMember = healthWellStats.direction;
+
+  var safeDirection;
+
+  if (distanceToTeamMember < distanceToHealthWell) {
+	  safeDirection = directionToTeamMember;
+  } else {
+	  safeDirection = directionToHealthWell;
+  }
+
+
+  if (gameData.turn < 200) {
+	  if (myHero.health < 100) {
+	    return safeDirection;
 	  } else {
-	    //If healthy, go capture a diamond mine!
-	    return helpers.findNearestUnownedDiamondMine(gameData);
+	    return directionToTeamMember;
 	  }
-
   } else {
 	  if (myHero.health < 50) {
-	    return helpers.findNearestHealthWell(gameData);
+	    return safeDirection;
 	  } else {
 	    return helpers.findNearestWeakerEnemy(gameData);
 	  }
