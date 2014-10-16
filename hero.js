@@ -119,14 +119,11 @@ var move = function(gameData, helpers) {
 */
 
 
-// The "Late Assassin"
-// This hero will attempt to kill the closest weaker enemy hero later in the game.
+// The "Coward Assassin"
 var move = function(gameData, helpers) {
   var myHero = gameData.activeHero;
+  gameData.activeHero.type = 'Coward Assassin';
 
-  if (myHero.health == 100) {
-    return helpers.findNearestWeakerEnemy(gameData);
-  }
 
   //Get stats on the nearest health well
   var healthWellStats = helpers.findNearestObjectDirectionAndDistance(gameData.board, myHero, function(boardTile) {
@@ -138,37 +135,80 @@ var move = function(gameData, helpers) {
   var distanceToHealthWell = healthWellStats.distance;
   var directionToHealthWell = healthWellStats.direction;
 
-  //Get stats on the nearest health well
-  var healthWellStats = helpers.findNearestObjectDirectionAndDistance(gameData.board, myHero, function(boardTile) {
+  //Get stats on the nearest Team Member
+  var teamMemberStats = helpers.findNearestObjectDirectionAndDistance(gameData.board, myHero, function(boardTile) {
     if (boardTile.type === 'TeamMember') {
       return true;
     }
   });
 
-  var distanceToTeamMember = healthWellStats.distance;
-  var directionToTeamMember = healthWellStats.direction;
+  var distanceToTeamMember = teamMemberStats.distance;
+  var directionToTeamMember = teamMemberStats.direction;
+
+  //Get stats on the nearest Weaker Enemy
+  var nearestWeakerEnemyStats = helpers.findNearestObjectDirectionAndDistance(gameData.board, myHero, function(boardTile) {
+    if (boardTile.type === 'WeakerEnemy') {
+      return true;
+    }
+  });
+
+  var distanceToWeakerEnemy = nearestWeakerEnemyStats.distance;
+  var directionToWeakerEnemy = nearestWeakerEnemyStats.direction;
+
+  //Get stats on the nearest Weaker Enemy
+  var nearestEnemyStats = helpers.findNearestObjectDirectionAndDistance(gameData.board, myHero, function(boardTile) {
+    if (boardTile.type === 'Enemy') {
+      return true;
+    }
+  });
+
+  var distanceToEnemy = nearestEnemyStats.distance;
+  var directionToEnemy = nearestEnemyStats.direction;
 
   var safeDirection;
+  var killDirection;
+  var distanceToKill;
 
-  if (distanceToTeamMember < distanceToHealthWell) {
-	  safeDirection = directionToTeamMember;
+  if (distanceToEnemy == 1 && myHero.health > 50 && distanceToHealthWell !=2) {
+	  distanceToKill = 1;
+	  killDirection = directionToEnemy;
+  }
+
+  if (distanceToWeakerEnemy == 1) {
+	  distanceToKill = 1;
+	  killDirection = directionToWeakerEnemy;
+  }
+
+  if (distanceToKill == 1) {
+	  return killDirection;
+  }
+
+  if (distanceToHealthWell == 1 && myHero.health != 100) {
+	  return directionToHealthWell;
+  }
+
+  if (distanceToTeamMember == 1 && myHero.health !=100 ) {
+	  return directionToTeamMember;
+  }
+
+  if (myHero.health == 100) {
+    return helpers.findNearestWeakerEnemy(gameData);
+  }
+  if (gameData.turn < 300) {
+	  if (distanceToTeamMember < distanceToHealthWell) {
+		  safeDirection = directionToTeamMember;
+	  } else {
+		  safeDirection = directionToHealthWell;
+	  }
   } else {
-	  safeDirection = directionToHealthWell;
+		  safeDirection = directionToHealthWell;
   }
 
 
-  if (gameData.turn < 200) {
-	  if (myHero.health < 100) {
-	    return safeDirection;
-	  } else {
-	    return directionToTeamMember;
-	  }
+  if (myHero.health < 50) {
+    return safeDirection;
   } else {
-	  if (myHero.health < 50) {
-	    return safeDirection;
-	  } else {
-	    return helpers.findNearestWeakerEnemy(gameData);
-	  }
+    return helpers.findNearestEnemy(gameData);
   }
 };
 
