@@ -122,7 +122,8 @@ var move = function(gameData, helpers) {
 // The "Coward Assassin"
 var move = function(gameData, helpers) {
   var myHero = gameData.activeHero;
-  gameData.activeHero.type = 'Coward Assassin';
+  // HP Bug ?
+  // gameData.activeHero.type = 'Coward Assassin';
 
 
   //Get stats on the nearest health well
@@ -165,6 +166,16 @@ var move = function(gameData, helpers) {
   var distanceToEnemy = nearestEnemyStats.distance;
   var directionToEnemy = nearestEnemyStats.direction;
 
+  //Get stats on the nearest health well
+  var nonTeamDiamondMineStats = helpers.findNearestObjectDirectionAndDistance(gameData.board, myHero, function(boardTile) {
+    if (boardTile.type === 'NonTeamDiamondMine') {
+      return true;
+    }
+  });
+
+  var distanceToNonTeamDiamondMine = nonTeamDiamondMineStats.distance;
+  var directionToNonTeamDiamondMine = nonTeamDiamondMineStats.direction;
+
   var safeDirection;
   var killDirection;
   var distanceToKill;
@@ -189,6 +200,10 @@ var move = function(gameData, helpers) {
 
   if (distanceToTeamMember == 1 && myHero.health !=100 ) {
 	  return directionToTeamMember;
+  }
+
+  if (distanceToNonTeamDiamondMine < 3 && myHeroHealth == 100) {
+	  return directionToNonTeamDiamondMine;
   }
 
   if (myHero.health == 100) {
